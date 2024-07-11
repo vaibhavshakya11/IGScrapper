@@ -20,7 +20,7 @@ IGScrapper is a tool that enables you to mass download various IGCSE resources i
 1. Clone the repository:
 
     ```bash
-    git clone https://github.com/yourusername/IGScrapper.git
+    git clone https://github.com/vaibhavshakya11/IGScrapper.git
     ```
 
 2. Navigate to the project directory:
