@@ -15,7 +15,7 @@ def get_exam_year():
     while True:
         try:
             year = input("Enter the year you will give your exams (e.g., 2025): ").strip()
-            if not year.isdigit() or len(year) != 4 or year not in range(2000, datetime.now().year + 10):
+            if not year.isdigit() or len(year) != 4 or int(year) not in range(2000, datetime.now().year + 10):
                 raise ValueError("Invalid input. Please enter a valid four-digit year.")
             return int(year)
         except ValueError as ve:
