@@ -32,20 +32,22 @@ IGScrapper is a tool that enables you to mass download various IGCSE resources i
 3. Install the required libraries:
 
     ```bash
-    pip install -r requirements.txt
+    pip3 install -r requirements.txt
     ```
 
 ## Usage
 
-1. Ensure that the `subject_dict.py` file is present in the same directory as your main script. This file contains the subject codes and their corresponding URLs.
+1. Ensure that the `subjects.py` file is present in the same directory as your main script. This file contains the subject codes and their corresponding URLs.
 
 2. Run the script:
 
     ```bash
-    python main.py
+    python3 main.py
     ```
 
 3. Follow the prompts to enter the subject code and the year you will be taking the exams.
+
+4. A new directory called IGCSE Syllabi should be created and all the syllabi shall be downloaded here.
 
 ## Example
 
