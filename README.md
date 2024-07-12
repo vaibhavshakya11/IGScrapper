@@ -48,12 +48,3 @@ IGScrapper is a tool that enables you to mass download various IGCSE resources i
 3. Follow the prompts to enter the subject code and the year you will be taking the exams.
 
 4. A new directory called IGCSE Syllabi should be created and all the syllabi shall be downloaded here.
-
-## Example
-
-```bash
-Enter the four-digit course code (e.g., 0625): 0625
-Enter the year you will be taking the exam (e.g., 2024): 2024
-Syllabus downloaded successfully: IGCSE Syllabi/Physics 0625 (2023-2025) Syllabus.pdf
-
-Do you want to download another subject's syllabus? (Y/N): N
