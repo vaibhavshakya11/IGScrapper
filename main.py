@@ -1,9 +1,9 @@
-import requests
 import os
-from bs4 import BeautifulSoup
-from subjects import subject_dict
 import re
+import requests
+from bs4 import BeautifulSoup
 from datetime import datetime
+from subjects import subject_dict
 
 def extract_all_links(site):
     html = requests.get(site).text
@@ -43,7 +43,6 @@ def is_valid_syllabus_for_year(url, exam_year):
             return False
     return False
     
-
 def extract_subject_name(subject_code):
     url_path = subject_dict[subject_code]
     match = re.search(r'/cambridge-igcse-(.*)-\d{4}/', url_path)
@@ -54,7 +53,7 @@ def extract_subject_name(subject_code):
         return subject_name
     return "Unknown Subject"
 
-def download_syllabus(subject_url, subject_code, folder="IGCSE Syllabi"):
+def download_syllabus(subject_url, subject_code, exam_year):
     year1, year2 = extract_years_from_url(subject_url)
     if year2:
         year_range = f"{year1}-{year2}"
@@ -63,11 +62,11 @@ def download_syllabus(subject_url, subject_code, folder="IGCSE Syllabi"):
     
     subject_name = extract_subject_name(subject_code)
     filename = f"{subject_name} {subject_code} ({year_range}) Syllabus.pdf"
-    
+    foldername = f"IGCSE Resources For {exam_year}"
     response = requests.get(subject_url, stream=True)
     if response.status_code == 200:
-        os.makedirs(folder, exist_ok=True)
-        filepath = os.path.join(folder, filename)
+        os.makedirs(foldername, exist_ok=True)
+        filepath = os.path.join(foldername, filename)
 
         with open(filepath, "wb") as f:
             for chunk in response.iter_content(1024):
@@ -107,7 +106,7 @@ def main():
             if val is not None and "syllabus.pdf" in val:
                 subject_url = f"https://www.cambridgeinternational.org{val}"
                 if is_valid_syllabus_for_year(subject_url, exam_year):
-                    download_syllabus(subject_url, subject_code)
+                    download_syllabus(subject_url, subject_code, exam_year)
                     syllabus_available = True
         if not syllabus_available:
             print("Syllabus Unavailable.")
