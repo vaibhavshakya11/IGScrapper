@@ -4,10 +4,10 @@ IGScrapper is a tool that enables you to mass download various IGCSE resources i
 
 ## Features
 
-- Download IGCSE syllabi for a specified exam year
+- Download IGCSE syllabi and past papers for specified exam years
 - Automatically names the downloaded files based on the subject and year
+- Creates a structured directory for each subject, organizing syllabi and past papers by year and series
 - Handles input validation and provides a robust user interface
-- Downloads past papers as specified by the user (feature rolling out soon) 
 
 ## Requirements
 
@@ -45,6 +45,22 @@ IGScrapper is a tool that enables you to mass download various IGCSE resources i
     python3 main.py
     ```
 
-3. Follow the prompts to enter the subject code and the year you will be taking the exams.
+3. Follow the prompts to enter the subject code, the year you will be taking the exams, and the start year for past papers download.
 
-4. A new directory called IGCSE Syllabi should be created and all the syllabi shall be downloaded here.
+4. The script will create a structured directory called `IGCSE Resources`, with subdirectories for each subject containing syllabi and past papers organized by year and series.
+
+
+## Notes
+
+- Enter `0000` as the subject code to exit the program.
+- Ensure you have a stable internet connection while using the script for downloading resources.
+
+## Contribution
+
+Feel free to contribute to the project by forking the repository and making pull requests. Ensure your code adheres to the existing style and include tests where appropriate.
+
+## License
+
+This project is licensed under the MIT License.
+
+Thanks for using IGScrapper, Vaibhav Shakya.
