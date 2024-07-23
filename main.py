@@ -16,7 +16,7 @@ def get_exam_year():
         try:
             year = input(f"Enter the year you'll give your exams (e.g., {datetime.now().year+1}): ").strip()
             if not year.isdigit() or len(year) != 4 or int(year) not in range(datetime.now().year, datetime.now().year + 8):
-                raise ValueError("Invalid input. Please enter a valid four-digit year.")
+                raise ValueError("Invalid input. Please enter a sensible four-digit year.")
             return int(year)
         except ValueError as ve:
             print(ve)
@@ -26,7 +26,7 @@ def get_past_paper_start_year():
         try:
             year = input(f"Enter the start year for past papers download (e.g., {datetime.now().year-4}): ").strip()
             if not year.isdigit() or len(year) != 4 or int(year) not in range(2000, datetime.now().year + 1):
-                raise ValueError("Invalid input. Please enter a valid four-digit year.")
+                raise ValueError("Invalid input. Please enter a sensible four-digit year.")
             return int(year)
         except ValueError as ve:
             print(ve)
@@ -56,13 +56,15 @@ def extract_subject_name(subject_code):
     url_path = subject_dict[subject_code]
     match = re.search(r'/cambridge-igcse-(.*)-\d{4}/', url_path)
     if match:
-        subject_name = match.group(1).replace('-', ' ').title()
+        subject_name = match.group(1)
         if "9 1" in subject_name:
             subject_name = subject_name.replace("9 1", "9-1")
         return subject_name
     return "Unknown Subject"
 
 def download_file(url, filename, foldername):
+    display_name = filename if "Syllabus" in filename else url[-18:]
+    foldername = foldername.replace("9 1 ", "")
     response = requests.get(url, stream=True)
     if response.status_code == 200:
         os.makedirs(foldername, exist_ok=True)
@@ -70,9 +72,9 @@ def download_file(url, filename, foldername):
         with open(filepath, "wb") as f:
             for chunk in response.iter_content(1024):
                 f.write(chunk)
-        print(f"Downloaded successfully: {filepath}")
+        print(f"{display_name}: Download Successful")
     else:
-        print(f"Error downloading: {url} \nStatus code: {response.status_code}")
+        print(f"{display_name}: Download Unsuccessful")
 
 def download_syllabus(subject_url, subject_code, exam_year):
     year1, year2 = extract_years_from_url(subject_url)
@@ -82,27 +84,53 @@ def download_syllabus(subject_url, subject_code, exam_year):
         year_range = f"{year1}"
     
     subject_name = extract_subject_name(subject_code)
-    filename = f"{subject_name} {subject_code} ({year_range}) Syllabus.pdf"
-    foldername = os.path.join("IGCSE Resources", f"{subject_name} {subject_code}")
+    filename = f"{subject_name.replace("-", " ").title().replace("9 1", "9-1")} {subject_code} ({year_range}) Syllabus.pdf"
+    foldername = os.path.join("IGCSE Resources", f"{subject_name.replace("-", " ").title().replace("9 1", "9-1")} {subject_code}")
     download_file(subject_url, filename, foldername)
 
 def get_series_suffix(series):
     return {'may june': 's', 'oct nov': 'w', 'feb march': 'm'}.get(series.lower(), '')
 
+def check_paper_availability(subject_code, subject_name, series_suffix, year):
+    if "-9-1" in subject_name:
+        base_url = "https://bestexamhelp.com/exam/cambridge-igcse-9-1"
+        subject_name = subject_name.replace("-9-1", "")
+    else:
+        base_url = "https://bestexamhelp.com/exam/cambridge-igcse"
+    available_papers = []
+    print("In the process of collecting valid components, please wait. This may take up to 2 minutes.")
+        
+    for paper_code in [f"{x}2" for x in range(1, 7)]:
+        for paper_type in ['qp', 'ms', 'in']:
+            url = f"{base_url}/{subject_name}-{subject_code}/{year}/{subject_code}_{series_suffix}{str(year)[-2:]}_{paper_type}_{paper_code}.pdf"
+            response = requests.head(url)
+            if response.status_code == 200:
+                for code_extension in ['1', '2', '3']:
+                    available_papers.append((paper_type, paper_code[0] + code_extension))
+    if available_papers:
+        print("Components found.")
+    else:
+        print("Components not found.")
+    return available_papers
+
 def download_past_papers(subject_code, subject_name, exam_year):
     current_year = datetime.now().year
-    base_url = "https://bestexamhelp.com/exam/cambridge-igcse"
-    subject_foldername = os.path.join("IGCSE Resources", f"{subject_name.title()} {subject_code}")
+    subject_foldername = os.path.join("IGCSE Resources", f"{subject_name.replace("-", " ").title().replace("9 1", "9-1")} {subject_code}")
 
     for year in range(exam_year, current_year + 1):
         for series in ['May June', 'Oct Nov', 'Feb March']:
             series_suffix = get_series_suffix(series)
-            for paper_type in ['qp', 'ms', 'in']:
-                for paper_code in [f"{x}{y}" for x in range(1,7) for y in range(1,4)]:
-                    url = f"{base_url}/{subject_name}-{subject_code}/{year}/{subject_code}_{series_suffix}{str(year)[-2:]}_{paper_type}_{paper_code}.pdf"
-                    filename = f"{subject_code}_{series_suffix}{str(year)[-2:]}_{paper_type}_{paper_code}.pdf"
-                    foldername = os.path.join(subject_foldername, "Past Papers", str(year), series)
-                    download_file(url, filename, foldername)
+            available_papers = check_paper_availability(subject_code, subject_name, series_suffix, year)
+            if "-9-1" in subject_name:
+                base_url = "https://bestexamhelp.com/exam/cambridge-igcse-9-1"
+                subject_name = subject_name.replace("-9-1", "")
+            else:
+                base_url = "https://bestexamhelp.com/exam/cambridge-igcse"
+            for paper_type, paper_code in available_papers:
+                url = f"{base_url}/{subject_name}-{subject_code}/{year}/{subject_code}_{series_suffix}{str(year)[-2:]}_{paper_type}_{paper_code}.pdf"
+                filename = f"{subject_code}_{series_suffix}{str(year)[-2:]}_{paper_type}_{paper_code}.pdf"
+                foldername = os.path.join(subject_foldername, "Past Papers", str(year), series, f"Paper {paper_code}")
+                download_file(url, filename, foldername)
 
 def take_code_input():
     while True:
@@ -111,7 +139,7 @@ def take_code_input():
             if code == "0000":
                 return None
             if len(code) != 4 or not code.isdigit():
-                raise ValueError("Invalid input. Please enter a four-digit numerical code.")
+                raise ValueError("Invalid input. Please enter a sensible four-digit numerical code.")
             if code not in subject_dict:
                 raise KeyError("Course code not found. Please enter a valid course code.")
         except ValueError as ve:
@@ -126,6 +154,7 @@ def main():
     print("Enter 0000 to exit once you're done!\n")
     exam_year = get_exam_year()
     start_year = get_past_paper_start_year()
+
     while True:
         subject_code = take_code_input()
         if subject_code is None:
@@ -142,7 +171,7 @@ def main():
         if not syllabus_available:
             print("Syllabus Unavailable.")
 
-        subject_name = extract_subject_name(subject_code).lower().replace(" ", "-")
+        subject_name = extract_subject_name(subject_code).lower()
         download_past_papers(subject_code, subject_name, start_year)
     print("\nExiting the program. \nThanks for using IGScrapper. \nRegards, Vaibhav Shakya.\n")
 
